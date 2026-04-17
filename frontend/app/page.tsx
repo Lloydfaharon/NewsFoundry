@@ -1,11 +1,23 @@
+import Connexion from "./component/Connexion/Connexion";
 import Image from "next/image";
+
+
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <h1>News Foundry</h1>
-      </main>
-    </div>
+    <>
+      <Image
+        src="/images/bg.jpg"
+        alt="Background"
+        fill
+        className="absolute top-0 left-0 w-full h-full object-cover -z-10"
+        priority
+      />
+      <div className="flex justify-center items-center h-screen">
+        <main className="">
+          <Connexion />
+        </main>
+      </div>
+    </>
   );
 }
