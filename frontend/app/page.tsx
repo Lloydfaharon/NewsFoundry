@@ -63,7 +63,7 @@ export default function Home() {
               Bienvenue sur votre espace de travail intelligent
             </p>
             <div className="flex justify-center items-center gap-2 mt-4 opacity-80">
-              <Image src="/images/newsfoundry.svg" alt="NewsFoundry" width={120} height={20} />
+              <Image src="/images/NEWSFOUNDRY.svg" alt="NewsFoundry" width={120} height={20} />
             </div>
           </div>
 
