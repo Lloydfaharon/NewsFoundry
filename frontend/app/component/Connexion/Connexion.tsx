@@ -35,7 +35,7 @@ export default function Connexion() {
             localStorage.setItem("token", data.access_token);
 
             // Redirection vers une page protégée (ex: /dashboard)
-            router.push("/");
+            router.push("/chat");
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -85,7 +85,7 @@ export default function Connexion() {
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 disabled:bg-gray-400 transition-colors"
+                    className="w-full bg-black text-white p-2 rounded-lg hover:bg-gray-800 disabled:bg-gray-400 transition-colors"
                 >
                     {isLoading ? "Connexion..." : "Se connecter"}
                 </button>

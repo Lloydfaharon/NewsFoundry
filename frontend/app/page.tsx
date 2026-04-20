@@ -62,8 +62,17 @@ export default function Home() {
             <p className="text-zinc-400 text-lg mb-10 leading-relaxed max-w-sm">
               Bienvenue sur votre espace de travail intelligent
             </p>
-            <div className="flex justify-center items-center gap-2 mt-4 opacity-80">
+            <div className="flex justify-center flex-col items-center gap-4 mt-4 opacity-100">
               <Image src="/images/NEWSFOUNDRY.svg" alt="NewsFoundry" width={120} height={20} />
+              
+              {/* NOUVEAU BOUTON VERS LE CHAT */}
+              <button 
+                onClick={() => router.push("/chat")}
+                className="mt-6 px-10 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-full font-bold shadow-[0_0_20px_rgba(79,70,229,0.4)] transition-all flex items-center gap-2 group transform hover:scale-105"
+              >
+                <svg className="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                Ouvrir l'Assistant IA
+              </button>
             </div>
           </div>
 
