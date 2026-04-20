@@ -33,5 +33,6 @@ jobs:
         PYTHONPATH: .
         DATABASE_URL: "sqlite:///:memory:"
         JWT_SECRET: "ci_secret_tester"
+        MISTRAL_API_KEY: "dummy_key_for_testing"
       run: |
         $HOME/.local/bin/uv run pytest tests/
