@@ -24,6 +24,7 @@ export default function ChatPage() {
 
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -147,17 +148,35 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-screen bg-gray-50 text-gray-900 font-sans overflow-hidden">
+      
+      {/* OVERLAY MOBILE SOMBRE (Si menu ouvert) */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/40 z-40 md:hidden transition-opacity"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* SIDEBAR (GAUCHE) */}
-      <div className="w-64 bg-white border-r border-gray-200 flex flex-col z-10 shrink-0">
+      <div className={`fixed inset-y-0 left-0 transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out w-64 sm:w-72 md:w-64 bg-white border-r border-gray-200 flex flex-col z-50 shrink-0`}>
+        
+        {/* Bouton fermer (Visible que sur Mobile) */}
+        <button 
+           className="absolute top-6 right-4 md:hidden text-gray-400 hover:text-gray-800"
+           onClick={() => setIsSidebarOpen(false)}
+        >
+           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+
         <div className="h-20 flex items-center justify-center border-b border-gray-100 cursor-pointer" onClick={() => router.push("/")}>
-          <Image src="/images/NEWSFOUNDRY.svg" alt="NewsFoundry" width={140} height={25} className="brightness-0" style={{ filter: 'invert(33%) sepia(87%) saturate(1476%) hue-rotate(242deg) brightness(85%) contrast(100%)' }} />
+          <Image src="/images/NEWSFOUNDRY.svg" alt="NewsFoundry" width={140} height={25} className="brightness-0 md:mr-0 mr-8" style={{ filter: 'invert(33%) sepia(87%) saturate(1476%) hue-rotate(242deg) brightness(85%) contrast(100%)' }} />
         </div>
 
         <div className="flex-1 overflow-y-auto">
           {chats.map((chat) => (
             <div
               key={chat.id}
-              onClick={() => loadChat(chat.id)}
+              onClick={() => { loadChat(chat.id); setIsSidebarOpen(false); }}
               className={`w-full text-left px-5 py-4 border-b border-gray-100 cursor-pointer transition-colors ${activeChatId === chat.id ? "bg-purple-50" : "hover:bg-gray-50"}`}
             >
               <h3 className="text-sm font-medium text-gray-800">Discussion #{chat.id}</h3>
@@ -181,15 +200,24 @@ export default function ChatPage() {
       <div className="flex-1 flex flex-col bg-[#EBEAF2] relative">
 
         {/* TABS TOP BAR */}
-        <div className="h-20 border-b border-gray-200/50 bg-[#EBEAF2] flex items-center px-6 gap-3 pt-2">
-          <button onClick={createChat} className="bg-[#7B3FE4] text-white px-5 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-sm">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-            Chat
-          </button>
-          <button className="bg-gray-100 text-gray-600 hover:bg-gray-200 px-5 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
-            Revue de presse
-          </button>
+        <div className="h-20 border-b border-gray-200/50 bg-[#EBEAF2] flex items-center px-4 md:px-6 gap-2 md:gap-3 pt-2">
+           
+           {/* Hamburger Menu (Visible Mobile) */}
+           <button 
+             onClick={() => setIsSidebarOpen(true)}
+             className="md:hidden p-2 text-gray-600 hover:bg-gray-200 rounded-lg mr-1 transition-colors"
+           >
+             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+           </button>
+
+           <button onClick={() => { createChat(); setIsSidebarOpen(false); }} className="bg-[#7B3FE4] text-white px-4 md:px-5 py-2.5 md:py-2 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-sm shrink-0">
+             <svg className="w-4 h-4 hidden sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+             <span className="hidden sm:inline">Nouveau </span>Chat
+           </button>
+           <button className="bg-gray-100 text-gray-600 hover:bg-gray-200 px-4 md:px-5 py-2.5 md:py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shrink-0">
+             <svg className="w-4 h-4 hidden sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
+             Revue <span className="hidden sm:inline">de presse</span>
+           </button>
         </div>
 
         {/* MESSAGES AREA */}
@@ -241,7 +269,7 @@ export default function ChatPage() {
         </div>
 
         {/* INPUT BAR (BOTTOM) */}
-        <div className="bg-white p-4 shrink-0">
+        <div className="bg-white p-3 sm:p-4 shrink-0 shadow-[0_-5px_15px_-10px_rgba(0,0,0,0.05)]">
           <form onSubmit={sendMessage} className="max-w-4xl mx-auto relative flex items-center">
             <input
               type="text"
@@ -249,14 +277,14 @@ export default function ChatPage() {
               onChange={(e) => setInput(e.target.value)}
               placeholder="Tapez votre message ici..."
               disabled={isLoading}
-              className="w-full bg-[#f4f4f5] border-none text-gray-800 rounded-xl pl-5 pr-16 py-4 focus:outline-none focus:ring-2 focus:ring-[#7B3FE4] transition-all disabled:opacity-50 placeholder:text-gray-400"
+              className="w-full bg-[#f4f4f5] border-none text-gray-800 rounded-xl pl-5 pr-14 sm:pr-16 py-3.5 sm:py-4 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#7B3FE4] transition-all disabled:opacity-50 placeholder:text-gray-400"
             />
             <button
               type="submit"
               disabled={!input.trim() || isLoading}
-              className={`absolute right-3 p-2.5 rounded-lg transition-all flex items-center justify-center ${input.trim() && !isLoading ? 'bg-[#7B3FE4] text-white hover:bg-purple-700' : 'bg-gray-300 text-gray-100 cursor-not-allowed'}`}
+              className={`absolute right-2 sm:right-3 p-2 sm:p-2.5 rounded-lg transition-all flex items-center justify-center ${input.trim() && !isLoading ? 'bg-[#7B3FE4] text-white hover:bg-purple-700' : 'bg-gray-300 text-gray-100 cursor-not-allowed'}`}
             >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" /></svg>
+              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" /></svg>
             </button>
           </form>
         </div>

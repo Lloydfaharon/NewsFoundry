@@ -35,7 +35,7 @@ export default function Connexion() {
             localStorage.setItem("token", data.access_token);
 
             // Redirection vers une page protégée (ex: /dashboard)
-            router.push("/");
+            router.push("/chat");
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -44,7 +44,7 @@ export default function Connexion() {
     };
 
     return (
-        <div className="bg-white backdrop-blur-md p-8 rounded-xl shadow-2xl w-full max-w-md p-10 m-20">
+        <div className="bg-white backdrop-blur-md p-6 sm:p-10 rounded-xl shadow-2xl w-full max-w-md mx-4 sm:mx-0">
             <div className="flex justify-center gap-1">
                 <Image src="/images/NEWSFOUNDRY.svg" alt="Logo" width={150} height={150} />
                 <Image src="/images/Union-3.svg" alt="Logo" width={20} height={20} />
