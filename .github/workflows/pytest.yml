@@ -24,8 +24,8 @@ jobs:
     - name: Install dependencies
       working-directory: ./backend
       run: |
-        $HOME/.local/bin/uv pip install system -e .
-        $HOME/.local/bin/uv pip install system pytest pytest-asyncio httpx
+        $HOME/.local/bin/uv pip install --system -e .
+        $HOME/.local/bin/uv pip install --system pytest pytest-asyncio httpx
         
     - name: Run tests
       working-directory: ./backend
