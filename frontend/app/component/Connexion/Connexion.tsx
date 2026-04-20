@@ -35,7 +35,7 @@ export default function Connexion() {
             localStorage.setItem("token", data.access_token);
 
             // Redirection vers une page protégée (ex: /dashboard)
-            router.push("/chat");
+            router.push("/");
         } catch (err: any) {
             setError(err.message);
         } finally {
