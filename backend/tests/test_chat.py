@@ -11,9 +11,13 @@ from src.agent import newsfoundry_agent
 
 from pydantic_ai import models
 from pydantic_ai.models.test import TestModel
+from src.database import init_db
 
 # Empêche PydanticAI de faire de vrais appels réseaux (sécurité pour la CI)
 models.ALLOW_MODEL_REQUESTS = False
+
+# On initialise la base de données SQLite en mémoire pour que les tables existent
+init_db()
 
 client = TestClient(app)
 
