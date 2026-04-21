@@ -1,17 +1,19 @@
-from pydantic_ai import Agent
+from pydantic_ai import Agent, RunContext
 
 # Modèle de base pour l'agent (PydanticAI détecte la clé MISTRAL_API_KEY)
 model_name = "mistral:mistral-large-latest"
 
-# On configure l'agent avec un prompt système fort pour lui donner une identité
+# On configure l'agent pour accepter un contexte via "deps_type=str"
 newsfoundry_agent = Agent(
     model_name,
-    system_prompt=(
-        "Tu es l'assistant de NewsFoundry, une application destinée à la gestion "
-        "d'articles et de tâches journalistiques.\n"
-        "Ton objectif est d'aider l'utilisateur (un rédacteur ou journaliste) de manière "
-        "précise et courtoise.\n"
-        "Réponds systématiquement en utilisant le format Markdown "
-        "(avec gras, listes, etc.) pour rendre tes textes plus lisibles."
-    )
+    deps_type=str
 )
+
+@newsfoundry_agent.system_prompt
+def dynamic_prompt(ctx: RunContext[str]) -> str:
+    """
+    Cette fonction est automatiquement appelée par l'agent au moment de .run()
+    Elle permet de récupérer le `system_prompt` stocké en base de données
+    et passé dynamiquement via l'argument `deps`.
+    """
+    return ctx.deps

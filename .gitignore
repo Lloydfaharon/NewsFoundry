@@ -12,6 +12,8 @@ node_modules/
 venv/
 env/
 ENV/
+*.db
+*.sqlite3
 __pycache__/
 *.py[cod]
 *$py.class

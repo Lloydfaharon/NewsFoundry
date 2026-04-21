@@ -16,6 +16,9 @@ class Chat(SQLModel, table=True):
     # Historique de la conversation, stocké sous forme de JSON
     history: List[Dict[str, Any]] = Field(default=[], sa_column=Column(JSON))
     
+    # Antisèche : le prompt généré avec les news
+    system_prompt: str = Field(default="Tu es l'assistant NewsFoundry.")
+    
     # Clé étrangère vers l'utilisateur
     user_id: int = Field(foreign_key="user.id")
     

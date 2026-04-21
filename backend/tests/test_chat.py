@@ -5,6 +5,7 @@ from sqlmodel import Session, select
 
 # Injection d'une fausse clé avant l'import de PydanticAI pour que l'initialisation ne plante pas
 os.environ["MISTRAL_API_KEY"] = "mock_key_only_for_tests"
+os.environ["DATABASE_URL"] = "sqlite:///./test.db"
 
 from src.main import app
 from src.agent import newsfoundry_agent
