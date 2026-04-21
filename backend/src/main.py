@@ -134,7 +134,7 @@ async def send_message(chat_id: int, message: MessageRequest, user: User = Depen
                 deps=chat.system_prompt,
                 message_history=pydantic_ai_history
             )
-            response_content = str(response.data)
+            response_content = str(getattr(response, "data", getattr(response, "output", "")))
         except Exception as e:
             print(f"Erreur run: {e}")
             response_content = "Désolé, une erreur technique m'a empêché de répondre."
