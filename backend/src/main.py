@@ -13,7 +13,9 @@ from .models import User, Chat # On importe le modèle User et Chat
 from .database import engine # On importe l'engine pour la session
 from .agent import newsfoundry_agent # Import de l'agent PydanticAI
 from .news_service import get_today_news_context # Import du service d'API externe News
-from pydantic_ai.messages import ModelRequest, ModelResponse, UserPromptPart, TextPart
+from pydantic_ai.messages import ModelMessage, ModelRequest, ModelResponse, UserPromptPart, TextPart, SystemPromptPart
+from pydantic import TypeAdapter
+import json
 
 # --- SCHÉMA DE DONNÉES ---
 class LoginRequest(BaseModel):
@@ -109,7 +111,34 @@ async def get_chat_history(chat_id: int, user: User = Depends(get_current_user))
         chat = session.get(Chat, chat_id)
         if not chat or chat.user_id != user.id:
             raise HTTPException(status_code=403, detail="Accès non autorisé à cette discussion")
-        return chat.history
+        
+        # On simplifie l'historique technique pour le Frontend (Affichage)
+        simplified_history = []
+        try:
+            # On purge et convertit l'historique brut de la base en objets ModelMessage
+            ta = TypeAdapter(list[ModelMessage])
+            messages = ta.validate_python(chat.history)
+            
+            for msg in messages:
+                # On ne garde que les messages qui ont du contenu textuel lisible
+                if isinstance(msg, ModelRequest):
+                    for part in msg.parts:
+                        if isinstance(part, UserPromptPart):
+                            simplified_history.append({"role": "user", "content": part.content})
+                elif isinstance(msg, ModelResponse):
+                    for part in msg.parts:
+                        if isinstance(part, TextPart):
+                            simplified_history.append({"role": "model", "content": part.content})
+            
+            # Fallback : si la liste simplifiée est vide mais que l'historique contient des vieux messages textuels
+            if not simplified_history and chat.history and isinstance(chat.history[0], dict) and "role" in chat.history[0]:
+                return chat.history
+                
+        except Exception as e:
+            print(f"Erreur simplification historique: {e}")
+            return chat.history # Retourne le brut en cas de doute
+            
+        return simplified_history
 
 @app.post("/chats/{chat_id}/messages")
 async def send_message(chat_id: int, message: MessageRequest, user: User = Depends(get_current_user)):
@@ -118,38 +147,59 @@ async def send_message(chat_id: int, message: MessageRequest, user: User = Depen
         if not chat or chat.user_id != user.id:
             raise HTTPException(status_code=403, detail="Accès non autorisé à cette discussion")
         
-        # 1. Préparation de l'historique PydanticAI (ModelMessage objects)
-        pydantic_ai_history = []
-        for msg in chat.history:
-            if msg.get("role") == "user":
-                pydantic_ai_history.append(ModelRequest(parts=[UserPromptPart(content=msg.get("content", ""))]))
-            else:
-                pydantic_ai_history.append(ModelResponse(parts=[TextPart(content=msg.get("content", ""))]))
+        # 1. Chargement et Désérialisation robuste de l'historique
+        ta = TypeAdapter(list[ModelMessage])
+        try:
+            raw_history = ta.validate_python(chat.history)
+            
+            # NETTOYAGE : On retire les SystemPromptPart de l'historique chargé.
+            # Pourquoi ? Parce que newsfoundry_agent.run() va ré-injecter le prompt système 
+            # via le décorateur @system_prompt (utilisant l'argument 'deps').
+            # Si on laisse l'ancien, Mistral reçoit deux prompts systèmes, ce qui casse l'ordre.
+            pydantic_ai_history = []
+            for msg in raw_history:
+                if isinstance(msg, ModelRequest):
+                    # On filtre les parties qui ne sont pas des SystemPromptPart
+                    filtered_parts = [p for p in msg.parts if not isinstance(p, SystemPromptPart)]
+                    if filtered_parts:
+                        pydantic_ai_history.append(ModelRequest(parts=filtered_parts, kind=msg.kind, timestamp=msg.timestamp))
+                else:
+                    pydantic_ai_history.append(msg)
+                    
+        except Exception as e:
+            print(f"Historique incompatible ou vide ({e}), on repart à zéro.")
+            pydantic_ai_history = []
                 
         # 2. Exécution de l'Agent PydanticAI
-        # On injecte l'historique converti ET notre system_prompt dynamique sauvegardé en BDD via 'deps'
         try:
-            response = await newsfoundry_agent.run(
+            result = await newsfoundry_agent.run(
                 message.content, 
                 deps=chat.system_prompt,
                 message_history=pydantic_ai_history
             )
-            response_content = str(getattr(response, "data", getattr(response, "output", "")))
+            
+            # On récupère la réponse textuelle finale (output ou data selon version)
+            response_content = str(getattr(result, "output", getattr(result, "data", "")))
+            
+            # 3. Sérialisation de l'historique COMPLET pour la prochaine fois
+            updated_messages = result.all_messages()
+            chat.history = ta.dump_python(updated_messages, mode='json')
+            
+            # 4. Sauvegarde
+            session.add(chat)
+            session.commit()
+            
+            return {"response": response_content}
+
         except Exception as e:
-            print(f"Erreur run: {e}")
-            response_content = "Désolé, une erreur technique m'a empêché de répondre."
-        
-        # 3. Mise à jour de l'historique JSON stocké en BDD (Copie)
-        history = list(chat.history) 
-        history.append({"role": "user", "content": message.content})
-        history.append({"role": "model", "content": response_content})
-        
-        # 4. Sauvegarde
-        chat.history = history
-        session.add(chat)
-        session.commit()
-        
-        return {"response": response_content}
+            import traceback
+            print(f"--- ERREUR CRITIQUE AGENT ---")
+            traceback.print_exc()
+            # On renvoie une erreur plus parlante pour le debug
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Erreur lors de la génération de la réponse : {str(e)}"
+            )
 
 if __name__ == "__main__":
     # Note : en local on utilise "main:app" pour que le reload fonctionne
