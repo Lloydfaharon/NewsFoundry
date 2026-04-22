@@ -87,6 +87,10 @@ async def create_chat(user: User = Depends(get_current_user)):
         "Tu es l'assistant de NewsFoundry, une application destinée à la gestion "
         "d'articles et de tâches journalistiques.\n"
         "Réponds systématiquement en utilisant le format Markdown.\n\n"
+        "DIRECTIVES STRICTES :\n"
+        "1. Ne montre JAMAIS tes appels techniques d'outils (ex: search_news_tool(...)) à l'utilisateur.\n"
+        "2. Si tu lances un outil, attends d'avoir le résultat pour rédiger ta réponse humaine.\n"
+        "3. Si tu ne trouves rien malgré tes recherches, explique-le poliment sans inventer de syntaxe technique.\n\n"
         f"{news_context}"
     )
 
@@ -178,8 +182,22 @@ async def send_message(chat_id: int, message: MessageRequest, user: User = Depen
                 message_history=pydantic_ai_history
             )
             
-            # On récupère la réponse textuelle finale (output ou data selon version)
-            response_content = str(getattr(result, "output", getattr(result, "data", "")))
+            # On récupère la réponse textuelle finale (en ignorant les parties techniques types ToolCall)
+            # On cherche spécifiquement la dernière partie textuelle de la réponse
+            response_content = ""
+            for msg in result.new_messages():
+                if isinstance(msg, ModelResponse):
+                    for part in msg.parts:
+                        if isinstance(part, TextPart):
+                            response_content += part.content
+            
+            # Fallback si aucune nouvelle partie textuelle n'est trouvée
+            if not response_content:
+                response_content = str(getattr(result, "output", getattr(result, "data", "")))
+            
+            # Nettoyage final pour supprimer d'éventuelles hallucinations résiduelles
+            if "search_news_tool" in response_content:
+                 response_content = "Je n'ai pas pu obtenir de résultats précis pour cette recherche. Pourriez-vous reformuler ?"
             
             # 3. Sérialisation de l'historique COMPLET pour la prochaine fois
             updated_messages = result.all_messages()

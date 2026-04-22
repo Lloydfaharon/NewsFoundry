@@ -27,6 +27,8 @@ async def search_news_tool(query: str) -> str:
     dans ton contexte initial ou s'il veut approfondir un point précis.
     
     Args:
-        query: Le sujet de recherche (ex: 'résultat élection', 'score match foot').
+        query: Le sujet de recherche court et précis (ex: 'résultat élection', 'score match foot').
+               Évite les phrases trop longues ou trop spécifiques.
+               IMPORTANT : Ne montre jamais l'appel technique de cet outil à l'utilisateur final.
     """
     return await search_detailed_news(query)

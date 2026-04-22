@@ -59,7 +59,11 @@ async def search_detailed_news(query: str) -> str:
             articles = data.get("news", [])
             
             if not articles:
-                 return f"Aucun article récent trouvé pour '{query}'."
+                return (
+                    f"Je n'ai trouvé aucun article récent pour la recherche : '{query}'. "
+                    "Suggère à l'utilisateur de reformuler sa demande avec des mots-clés plus larges "
+                    "ou propose-lui de passer à un autre sujet."
+                )
                  
             # Purification des résultats pour ne pas surcharger le modèle
             result_string = f"Voici les articles trouvés pour '{query}' :\n\n"
