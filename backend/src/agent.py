@@ -1,4 +1,5 @@
 from pydantic_ai import Agent, RunContext
+from .news_service import search_detailed_news
 
 # Modèle de base pour l'agent (PydanticAI détecte la clé MISTRAL_API_KEY)
 model_name = "mistral:mistral-large-latest"
@@ -17,3 +18,15 @@ def dynamic_prompt(ctx: RunContext[str]) -> str:
     et passé dynamiquement via l'argument `deps`.
     """
     return ctx.deps
+
+@newsfoundry_agent.tool_plain
+async def search_news_tool(query: str) -> str:
+    """
+    Recherche des articles de presse supplémentaires sur un sujet spécifique.
+    Utilise cet outil si l'utilisateur pose une question sur un sujet qui n'est pas 
+    dans ton contexte initial ou s'il veut approfondir un point précis.
+    
+    Args:
+        query: Le sujet de recherche (ex: 'résultat élection', 'score match foot').
+    """
+    return await search_detailed_news(query)
