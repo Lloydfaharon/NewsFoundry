@@ -15,6 +15,7 @@ from .agent import newsfoundry_agent # Import de l'agent PydanticAI
 from .news_service import get_today_news_context # Import du service d'API externe News
 from pydantic_ai.messages import ModelMessage, ModelRequest, ModelResponse, UserPromptPart, TextPart, SystemPromptPart
 from pydantic import TypeAdapter
+from .press_agent import press_agent # Import de l'agent spécialisé
 import json
 
 # --- SCHÉMA DE DONNÉES ---
@@ -24,6 +25,9 @@ class LoginRequest(BaseModel):
 
 class MessageRequest(BaseModel):
     content: str
+
+class PressReleaseRequest(BaseModel):
+    topic: str
 
 # 1. On définit le cycle de vie pour initialiser la DB au démarrage sur Railway
 @asynccontextmanager
@@ -142,7 +146,10 @@ async def get_chat_history(chat_id: int, user: User = Depends(get_current_user))
             print(f"Erreur simplification historique: {e}")
             return chat.history # Retourne le brut en cas de doute
             
-        return simplified_history
+        return {
+            "messages": simplified_history,
+            "press_releases": chat.press_releases or []
+        }
 
 @app.post("/chats/{chat_id}/messages")
 async def send_message(chat_id: int, message: MessageRequest, user: User = Depends(get_current_user)):
@@ -218,6 +225,65 @@ async def send_message(chat_id: int, message: MessageRequest, user: User = Depen
                 status_code=500, 
                 detail=f"Erreur lors de la génération de la réponse : {str(e)}"
             )
+
+# --- NOUVELLE ROUTE : GÉNÉRATION DE REVUE DE PRESSE ---
+@app.post("/chats/{chat_id}/press-release")
+async def generate_press_release(chat_id: int, request: PressReleaseRequest, user: User = Depends(get_current_user)):
+    with Session(engine) as session:
+        # 1. Vérification de la propriété du chat
+        chat = session.get(Chat, chat_id)
+        if not chat or chat.user_id != user.id:
+            raise HTTPException(status_code=403, detail="Accès non autorisé")
+
+        # 2. Re-préparation de l'historique technique (pour que l'IA ait tout le contexte)
+        ta = TypeAdapter(list[ModelMessage])
+        try:
+            # On utilise tout l'historique technique, sans filtre, pour un maximum de contexte nutritif pour l'IA
+            pydantic_ai_history = ta.validate_python(chat.history)
+        except Exception as e:
+            print(f"Erreur historique : {e}")
+            pydantic_ai_history = []
+
+        # 3. Appel de l'agent spécialisé
+        try:
+            result = await press_agent.run(
+                f"Sujet de la revue de presse : {request.topic}",
+                message_history=pydantic_ai_history
+            )
+            
+            # result.output contient déjà un objet de type PressRelease (grâce à output_type)
+            new_release = result.output.model_dump()
+            
+            # 4. Enregistrement en base de données
+            # On réaffecte la liste pour forcer SQLAlchemy à détecter le changement
+            current_releases = list(chat.press_releases)
+            current_releases.append(new_release)
+            chat.press_releases = current_releases
+            
+            session.add(chat)
+            session.commit()
+            
+            return new_release
+
+        except Exception as e:
+            print(f"Erreur génération revue : {e}")
+            raise HTTPException(status_code=500, detail="Échec de la génération de la revue de presse")
+
+# --- NOUVELLE ROUTE : RÉCUPÉRATION GLOBALE DES REVUES ---
+@app.get("/press-releases")
+async def list_all_press_releases(user: User = Depends(get_current_user)):
+    with Session(engine) as session:
+        statement = select(Chat).where(Chat.user_id == user.id)
+        chats = session.exec(statement).all()
+        all_releases = []
+        for chat in chats:
+            if chat.press_releases:
+                for release in chat.press_releases:
+                    release_copy = dict(release)
+                    release_copy["chat_id"] = chat.id
+                    all_releases.append(release_copy)
+        return all_releases
+
 
 if __name__ == "__main__":
     # Note : en local on utilise "main:app" pour que le reload fonctionne

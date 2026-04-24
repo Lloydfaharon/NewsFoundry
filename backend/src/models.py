@@ -24,3 +24,6 @@ class Chat(SQLModel, table=True):
     
     # Relation : Un chat a un seul utilisateur
     user: User = Relationship(back_populates="chats")
+
+    # Nouveau : Liste des revues de presse générées pour ce chat
+    press_releases: List[Dict[str, Any]] = Field(default=[], sa_column=Column(JSON))
