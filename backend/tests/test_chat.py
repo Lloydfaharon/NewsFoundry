@@ -7,12 +7,12 @@ from sqlmodel import Session, select
 os.environ["MISTRAL_API_KEY"] = "mock_key_only_for_tests"
 os.environ["DATABASE_URL"] = "sqlite:///./test.db"
 
-from src.main import app
-from src.agent import newsfoundry_agent
+from main import app
+from agent import newsfoundry_agent
 
 from pydantic_ai import models
 from pydantic_ai.models.test import TestModel
-from src.database import init_db
+from database import init_db
 
 # Empêche PydanticAI de faire de vrais appels réseaux (sécurité pour la CI)
 models.ALLOW_MODEL_REQUESTS = False
