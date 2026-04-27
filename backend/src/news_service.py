@@ -7,7 +7,7 @@ async def get_today_news_context() -> str:
     WORLD_NEWS_API_KEY = os.getenv("WORLD_NEWS_API_KEY")
     if not WORLD_NEWS_API_KEY:
         print("ATTENTION: WORLD_NEWS_API_KEY est introuvable. On renvoie un contexte vide.")
-        return "Tu es l'assistant NewsFoundry. (Mode Hors-Ligne: API News introuvable)"
+        return "Tu es l'assistant NewsFoundry. (Mode Hors-Ligne: API News introuvable)", []
 
     url = f"https://api.worldnewsapi.com/top-news?api-key={WORLD_NEWS_API_KEY}&source-country=fr&language=fr"
     
