@@ -4,20 +4,26 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
 # Injection d'une fausse clé avant l'import de PydanticAI pour que l'initialisation ne plante pas
+# Nom de la base de données de test
+TEST_DB_FILE = "./test_backend.db"
+
+# On supprime l'ancienne base de données de test pour repartir sur un schéma tout neuf
+if os.path.exists(TEST_DB_FILE):
+    os.remove(TEST_DB_FILE)
+
 os.environ["MISTRAL_API_KEY"] = "mock_key_only_for_tests"
-os.environ["DATABASE_URL"] = "sqlite:///./test.db"
+os.environ["DATABASE_URL"] = f"sqlite:///{TEST_DB_FILE}"
 
 from main import app
 from agent import newsfoundry_agent
-
 from pydantic_ai import models
 from pydantic_ai.models.test import TestModel
 from database import init_db
 
-# Empêche PydanticAI de faire de vrais appels réseaux (sécurité pour la CI)
+# Empêche PydanticAI de faire de vrais appels réseaux
 models.ALLOW_MODEL_REQUESTS = False
 
-# On initialise la base de données SQLite en mémoire pour que les tables existent
+# Initialisation des tables sur le fichier tout neuf
 init_db()
 
 client = TestClient(app)
@@ -41,7 +47,8 @@ def test_chat_workflow():
     # 2. Vérification que l'historique est vide au début
     response = client.get(f"/chats/{chat_id}", headers=headers)
     assert response.status_code == 200
-    assert response.json() == []
+    data = response.json()
+    assert data["messages"] == []
 
     test_model = TestModel()
     
@@ -57,7 +64,7 @@ def test_chat_workflow():
         # 4. Vérifier que l'historique contient bien l'échange
         response = client.get(f"/chats/{chat_id}", headers=headers)
         assert response.status_code == 200
-        history = response.json()
+        history = response.json()["messages"]
         assert len(history) == 2
         assert history[0]["role"] == "user"
         assert history[0]["content"] == "Peux-tu m'aider ?"

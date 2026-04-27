@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from pydantic_ai import Agent, RunContext
 from sqlmodel import Session
-from .news_service import search_detailed_news_with_urls
-from .models import Chat
-from .database import engine
+from news_service import search_detailed_news_with_urls
+from models import Chat
+from database import engine
 
 @dataclass
 class AgentDeps:

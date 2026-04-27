@@ -1,5 +1,5 @@
 import os
-from .models import User, Chat
+from models import User, Chat
 from sqlmodel import SQLModel, Session, create_engine, select
 import bcrypt
 

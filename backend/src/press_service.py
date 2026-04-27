@@ -1,6 +1,6 @@
 from llama_index.core import SummaryIndex, Document
 from llama_index.readers.web import SimpleWebPageReader
-from .schemas import PressRelease
+from schemas import PressRelease
 
 async def generate_rag_press_release(urls: list[str], topic: str) -> PressRelease:
     """

@@ -1,5 +1,5 @@
 from pydantic_ai import Agent
-from .schemas import PressRelease
+from schemas import PressRelease
 
 # On définit l'agent avec result_type. 
 # C'est ce paramètre qui "force" l'IA à renvoyer un objet JSON valide 

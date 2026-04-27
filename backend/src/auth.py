@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 from fastapi import HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer
 from sqlmodel import Session, select
-from .database import engine
-from .models import User
+from database import engine
+from models import User
 
 # On récupère une clé secrète depuis les variables d'environnement Railway
 # Si elle n'existe pas, on met une valeur par défaut (uniquement pour le dev)

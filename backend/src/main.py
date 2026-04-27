@@ -1,22 +1,22 @@
 from dotenv import load_dotenv
 load_dotenv()
 from contextlib import asynccontextmanager
-from .database import init_db
+from database import init_db # Import absolu
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlmodel import Session, select
 import uvicorn
 import bcrypt
-from .auth import create_access_token, get_current_user
-from .models import User, Chat
-from .database import engine
-from .agent import newsfoundry_agent, AgentDeps
-from .press_service import generate_rag_press_release
-from .news_service import get_today_news_context
+from auth import create_access_token, get_current_user # Import absolu
+from models import User, Chat # Import absolu
+from database import engine # Import absolu
+from agent import newsfoundry_agent, AgentDeps # Import absolu
+from press_service import generate_rag_press_release # Import absolu
+from news_service import get_today_news_context # Import absolu
 from pydantic_ai.messages import ModelMessage, ModelRequest, ModelResponse, UserPromptPart, TextPart, SystemPromptPart
 from pydantic import TypeAdapter
-from .press_agent import press_agent
+from press_agent import press_agent # Import absolu
 import json
 
 # --- SCHÉMA DE DONNÉES ---
