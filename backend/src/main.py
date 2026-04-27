@@ -104,8 +104,10 @@ async def get_chat_history(chat_id: int, user: User = Depends(get_current_user))
                     for part in msg.parts:
                         if isinstance(part, TextPart):
                             simplified_history.append({"role": "model", "content": part.content})
-        except Exception:
-            return chat.history
+        except Exception as e:
+            print(f"Erreur lors de la simplification de l'historique : {e}")
+            return {"messages": [], "press_releases": chat.press_releases or []}
+        
         return {"messages": simplified_history, "press_releases": chat.press_releases or []}
 
 @app.post("/chats/{chat_id}/messages")

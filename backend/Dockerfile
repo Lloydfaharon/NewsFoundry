@@ -10,6 +10,9 @@ RUN uv sync --frozen
 # On copie le contenu de local "src/" vers le "src/" du conteneur
 COPY src/ ./src/
 
+# Indispensable pour que uvicorn trouve 'database', 'models', etc. avec les nouvelles imports
+ENV PYTHONPATH=src
+
 EXPOSE 8000
 
 # On lance uvicorn en utilisant 'uv run' pour respecter ton environnement
