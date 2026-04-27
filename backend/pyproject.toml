@@ -14,6 +14,9 @@ dependencies = [
     "pydantic-ai>=1.84.1",
     "mistralai>=2.4.0",
     "python-dotenv>=1.1.1",
+    "llama-index>=0.14.21",
+    "llama-index-readers-web>=0.6.0",
+    "llama-index-llms-mistralai>=0.10.1",
 ]
 
 [dependency-groups]

@@ -27,3 +27,6 @@ class Chat(SQLModel, table=True):
 
     # Nouveau : Liste des revues de presse générées pour ce chat
     press_releases: List[Dict[str, Any]] = Field(default=[], sa_column=Column(JSON))
+
+    # RAG : On stocke les URLs des articles chargés via les outils pour LlamaIndex
+    loaded_articles: List[str] = Field(default=[], sa_column=Column(JSON))
