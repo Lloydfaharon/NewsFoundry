@@ -17,8 +17,9 @@ async def get_today_news_context() -> str:
             
             if response.status_code != 200:
                 print(f"Erreur API World News: {response.status_code}")
-                return "Tu es l'assistant NewsFoundry. (Service d'actualités temporairement indisponible)"
+                return "Tu es l'assistant NewsFoundry. (Service d'actualités temporairement indisponible)", []
             
+            data = response.json()
             context = "Voici les actualités récentes pour t'aider dans tes réponses :\n\n"
             urls = []
             
