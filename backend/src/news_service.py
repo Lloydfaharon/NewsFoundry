@@ -19,22 +19,26 @@ async def get_today_news_context() -> str:
                 print(f"Erreur API World News: {response.status_code}")
                 return "Tu es l'assistant NewsFoundry. (Service d'actualités temporairement indisponible)"
             
-            data = response.json()
             context = "Voici les actualités récentes pour t'aider dans tes réponses :\n\n"
+            urls = []
             
-            # On ne prend que les 5 premiers articles pour ne pas saturer le LLM (fenêtre de contexte)
+            # On ne prend que les 5 premiers articles
             for cluster in data.get("top_news", [])[:5]:
                 for article in cluster.get("news", [])[:1]:
                     title = article.get("title", "Titre inconnu")
                     text = article.get("text", "")
+                    link = article.get("url", "")
+                    if link:
+                        urls.append(link)
+                        
                     summary = text[:200] + "..." if len(text) > 200 else text
                     context += f"- **{title}** : {summary}\n"
                     
-            return context
+            return context, urls
 
     except Exception as e:
         print(f"Exception lors du fetch des news : {str(e)}")
-        return "Tu es l'assistant NewsFoundry. (Erreur de connexion au service d'actualités)"
+        return "Tu es l'assistant NewsFoundry. (Erreur de connexion au service d'actualités)", []
 
 async def search_detailed_news(query: str) -> str:
     """
