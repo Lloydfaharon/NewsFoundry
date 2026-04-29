@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 load_dotenv()
+from datetime import datetime
 from contextlib import asynccontextmanager
 from database import init_db # Import absolu
 from fastapi import FastAPI, HTTPException, Depends
@@ -83,7 +84,7 @@ async def list_chats(user: User = Depends(get_current_user)):
     with Session(engine) as session:
         statement = select(Chat).where(Chat.user_id == user.id)
         chats = session.exec(statement).all()
-        return [{"id": c.id} for c in chats]
+        return [{"id": c.id, "created_at": c.created_at.isoformat() if c.created_at else datetime.utcnow().isoformat()} for c in chats]
 
 @app.get("/chats/{chat_id}")
 async def get_chat_history(chat_id: int, user: User = Depends(get_current_user)):
@@ -97,13 +98,15 @@ async def get_chat_history(chat_id: int, user: User = Depends(get_current_user))
             messages = ta.validate_python(chat.history)
             for msg in messages:
                 if isinstance(msg, ModelRequest):
+                    ts = msg.timestamp.isoformat() if getattr(msg, "timestamp", None) else None
                     for part in msg.parts:
                         if isinstance(part, UserPromptPart):
-                            simplified_history.append({"role": "user", "content": part.content})
+                            simplified_history.append({"role": "user", "content": part.content, "timestamp": ts})
                 elif isinstance(msg, ModelResponse):
+                    ts = msg.timestamp.isoformat() if getattr(msg, "timestamp", None) else None
                     for part in msg.parts:
                         if isinstance(part, TextPart):
-                            simplified_history.append({"role": "model", "content": part.content})
+                            simplified_history.append({"role": "model", "content": part.content, "timestamp": ts})
         except Exception as e:
             print(f"Erreur lors de la simplification de l'historique : {e}")
             return {"messages": [], "press_releases": chat.press_releases or []}
@@ -144,7 +147,14 @@ async def send_message(chat_id: int, message: MessageRequest, user: User = Depen
             chat.history = ta.dump_python(result.all_messages(), mode='json')
             session.add(chat)
             session.commit()
-            return {"response": response_content}
+            
+            # Find the timestamp of the response
+            resp_ts = None
+            for m in result.new_messages():
+                if isinstance(m, ModelResponse) and getattr(m, "timestamp", None):
+                    resp_ts = m.timestamp.isoformat()
+            
+            return {"response": response_content, "timestamp": resp_ts or datetime.utcnow().isoformat()}
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
@@ -172,6 +182,7 @@ async def create_press_release(chat_id: int, request: PressReleaseRequest, user:
             except Exception as e:
                 raise HTTPException(status_code=500, detail="Échec génération")
 
+        new_release_dict["created_at"] = datetime.utcnow().isoformat()
         current_releases = list(chat.press_releases)
         current_releases.append(new_release_dict)
         chat.press_releases = current_releases
@@ -194,4 +205,4 @@ async def list_all_press_releases(user: User = Depends(get_current_user)):
         return all_releases
 
 if __name__ == "__main__":
-    uvicorn.run("src.main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

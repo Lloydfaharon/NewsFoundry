@@ -1,4 +1,5 @@
 from typing import Optional, List, Dict, Any
+from datetime import datetime
 from sqlmodel import SQLModel, Field, Relationship
 from sqlalchemy import Column, JSON
 
@@ -30,3 +31,6 @@ class Chat(SQLModel, table=True):
 
     # RAG : On stocke les URLs des articles chargés via les outils pour LlamaIndex
     loaded_articles: List[str] = Field(default=[], sa_column=Column(JSON))
+    
+    # Date de création
+    created_at: datetime = Field(default_factory=datetime.utcnow)

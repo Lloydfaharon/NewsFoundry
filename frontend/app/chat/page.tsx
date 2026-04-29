@@ -8,6 +8,7 @@ import ReactMarkdown from "react-markdown";
 interface Message {
   role: "user" | "model";
   content: string;
+  timestamp?: string;
 }
 
 interface ArticleSummary {
@@ -24,6 +25,7 @@ interface PressRelease {
 
 interface ChatObj {
   id: number;
+  created_at?: string;
 }
 
 export default function ChatPage() {
@@ -167,7 +169,7 @@ export default function ChatPage() {
 
     const userMsg = input.trim();
     setInput("");
-    setMessages((prev) => [...prev, { role: "user", content: userMsg }]);
+    setMessages((prev) => [...prev, { role: "user", content: userMsg, timestamp: new Date().toISOString() }]);
     setIsLoading(true);
 
     try {
@@ -182,7 +184,7 @@ export default function ChatPage() {
 
       if (res.ok) {
         const data = await res.json();
-        setMessages((prev) => [...prev, { role: "model", content: data.response }]);
+        setMessages((prev) => [...prev, { role: "model", content: data.response, timestamp: data.timestamp }]);
       }
     } catch (err) {
       console.error(err);
@@ -263,7 +265,9 @@ export default function ChatPage() {
               className={`w-full text-left px-6 py-4 border-b border-gray-50 cursor-pointer transition-colors ${activeChatId === chat.id ? "bg-white shadow-[inset_4px_0_0_0_rgba(123,63,228,0.2)]" : "hover:bg-gray-50"}`}
             >
               <h3 className={`text-sm ${activeChatId === chat.id ? "font-bold text-gray-800" : "font-medium text-gray-500"}`}>Discussion du</h3>
-              <p className="text-[11px] text-gray-400 font-normal">10/12/2026</p>
+              <p className="text-[11px] text-gray-400 font-normal">
+                {chat.created_at ? new Date(chat.created_at).toLocaleDateString("fr-FR", { day: '2-digit', month: '2-digit', year: 'numeric' }) : "10/12/2026"}
+              </p>
             </div>
           ))}
         </div>
@@ -377,7 +381,9 @@ export default function ChatPage() {
                         <p className="text-[14.5px] leading-relaxed">{msg.content}</p>
                       )}
                     </div>
-                    <span className="text-[11px] text-gray-400 font-medium px-2">10:31</span>
+                    <span className="text-[11px] text-gray-400 font-medium px-2">
+                      {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' })}
+                    </span>
                   </div>
 
                   {msg.role === "user" && (

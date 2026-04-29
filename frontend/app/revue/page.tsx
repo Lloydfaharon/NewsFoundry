@@ -15,6 +15,7 @@ interface PressRelease {
   general_summary: string;
   articles: ArticleSummary[];
   chat_id: number;
+  created_at?: string;
 }
 
 export default function PressReleasesPage() {
@@ -93,7 +94,9 @@ export default function PressReleasesPage() {
               className="w-full text-left px-6 py-4 border-b border-gray-50 cursor-pointer hover:bg-gray-50"
             >
               <h3 className="text-sm font-medium text-gray-500">Discussion du</h3>
-              <p className="text-[11px] text-gray-400">10/12/2026</p>
+              <p className="text-[11px] text-gray-400">
+                {chat.created_at ? new Date(chat.created_at).toLocaleDateString("fr-FR", { day: '2-digit', month: '2-digit', year: 'numeric' }) : "10/12/2026"}
+              </p>
             </div>
           ))}
           {chats.length === 0 && (
@@ -160,7 +163,9 @@ export default function PressReleasesPage() {
                       <h3 className="text-[15px] font-bold text-gray-800 uppercase tracking-wide">{release.title}</h3>
                       <div className="flex items-center gap-2 text-[12px] text-gray-400 font-medium">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                        mardi 30 septembre 2025 à 09:00
+                        {release.created_at 
+                          ? new Date(release.created_at).toLocaleDateString("fr-FR", { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) 
+                          : "mardi 30 septembre 2025 à 09:00"}
                       </div>
                     </div>
                     <button 
