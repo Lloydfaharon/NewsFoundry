@@ -26,6 +26,12 @@ export default function PressReleasesPage() {
   const [activeChatId, setActiveChatId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const showError = (msg: string) => {
+    setError(msg);
+    setTimeout(() => setError(null), 5000);
+  };
 
   useEffect(() => {
     const savedToken = localStorage.getItem("token");
@@ -46,9 +52,15 @@ export default function PressReleasesPage() {
       if (res.ok) {
         const data = await res.json();
         setChats(data.reverse());
+      } else if (res.status === 401) {
+        localStorage.removeItem("token");
+        router.push("/login");
+      } else {
+        showError("Erreur lors du chargement des discussions.");
       }
     } catch (err) {
       console.error(err);
+      showError("Impossible de se connecter au serveur.");
     }
   };
 
@@ -60,9 +72,15 @@ export default function PressReleasesPage() {
       if (res.ok) {
         const data = await res.json();
         setReleases(data.reverse());
+      } else if (res.status === 401) {
+        localStorage.removeItem("token");
+        router.push("/login");
+      } else {
+        showError("Erreur lors du chargement des revues de presse.");
       }
     } catch (err) {
       console.error(err);
+      showError("Impossible de se connecter au serveur.");
     } finally {
       setIsLoading(false);
     }
@@ -80,6 +98,16 @@ export default function PressReleasesPage() {
   return (
     <div className="flex h-screen bg-[#F0F2F5] text-gray-900 font-sans overflow-hidden">
       
+      {/* ERROR ALERT */}
+      {error && (
+        <div className="fixed top-6 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-xl shadow-2xl z-[200] flex items-center gap-3 animate-[bounce_1s_ease-in-out_infinite]">
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span className="text-sm font-bold">{error}</span>
+        </div>
+      )}
+
        {/* SIDEBAR */}
        <div className={`fixed inset-y-0 left-0 transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out w-64 bg-[#F9F9FB] border-r border-gray-100 flex flex-col z-50 shrink-0`}>
         <div className="h-20 flex items-center px-6 border-b border-gray-50 cursor-pointer" onClick={() => router.push("/")}>

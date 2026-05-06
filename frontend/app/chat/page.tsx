@@ -42,7 +42,12 @@ export default function ChatPage() {
   const [pressTopic, setPressTopic] = useState("");
   const [isGeneratingPress, setIsGeneratingPress] = useState(false);
   const [mode, setMode] = useState("chat");
+  const [error, setError] = useState<string | null>(null);
 
+  const showError = (msg: string) => {
+    setError(msg);
+    setTimeout(() => setError(null), 5000);
+  };
 
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -77,6 +82,7 @@ export default function ChatPage() {
       }
     } catch (err) {
       console.error(err);
+      showError("Impossible de charger les discussions.");
     }
   };
 
@@ -99,6 +105,7 @@ export default function ChatPage() {
       }
     } catch (err) {
       console.error(err);
+      showError("Impossible de charger l'historique de cette discussion.");
     }
   };
 
@@ -117,6 +124,7 @@ export default function ChatPage() {
       }
     } catch (err) {
       console.error(err);
+      showError("Erreur lors de la création d'une nouvelle discussion.");
     }
   };
 
@@ -140,6 +148,7 @@ export default function ChatPage() {
       }
     } catch (err) {
       console.error(err);
+      showError("Échec de la génération de la revue de presse. Veuillez réessayer.");
     } finally {
       setIsGeneratingPress(false);
     }
@@ -161,8 +170,13 @@ export default function ChatPage() {
           currentChatId = data.id;
           setChats((prev) => [data, ...prev]);
           setActiveChatId(currentChatId!);
+        } else {
+          showError("Erreur lors de la création d'une nouvelle discussion.");
         }
-      } catch (err) { console.error(err); }
+      } catch (err) { 
+        console.error(err); 
+        showError("Impossible de se connecter au serveur.");
+      }
     }
 
     if (!input.trim() || !currentChatId || !token) return;
@@ -185,9 +199,12 @@ export default function ChatPage() {
       if (res.ok) {
         const data = await res.json();
         setMessages((prev) => [...prev, { role: "model", content: data.response, timestamp: data.timestamp }]);
+      } else {
+        showError("L'IA n'a pas pu traiter votre message.");
       }
     } catch (err) {
       console.error(err);
+      showError("Erreur réseau. Impossible d'envoyer le message.");
     } finally {
       setIsLoading(false);
     }
@@ -201,6 +218,16 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-screen bg-[#F0F2F5] text-gray-900 font-sans overflow-hidden">
+
+      {/* ERROR ALERT */}
+      {error && (
+        <div className="fixed top-6 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-xl shadow-2xl z-[200] flex items-center gap-3 animate-[bounce_1s_ease-in-out_infinite]">
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span className="text-sm font-bold">{error}</span>
+        </div>
+      )}
 
       {/* MODALE GÉNÉRATION REVUE DE PRESSE */}
       {isPressModalOpen && (

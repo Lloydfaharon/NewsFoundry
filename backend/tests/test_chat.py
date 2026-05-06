@@ -18,7 +18,9 @@ from main import app
 from agent import newsfoundry_agent
 from pydantic_ai import models
 from pydantic_ai.models.test import TestModel
-from database import init_db
+from database import init_db, engine
+from models import User
+import bcrypt
 
 # Empêche PydanticAI de faire de vrais appels réseaux
 models.ALLOW_MODEL_REQUESTS = False
@@ -70,10 +72,27 @@ def test_chat_workflow():
         assert history[0]["content"] == "Peux-tu m'aider ?"
         assert history[1]["role"] == "model"
 
-def test_unauthorized_access():
-    token = get_test_token()
-    headers = {"Authorization": f"Bearer {token}"}
+def get_second_test_token():
+    with Session(engine) as session:
+        user2 = session.exec(select(User).where(User.email == "voleur@test.com")).first()
+        if not user2:
+            hashed_pw = bcrypt.hashpw("voleur".encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+            user2 = User(email="voleur@test.com", hashed_password=hashed_pw)
+            session.add(user2)
+            session.commit()
     
-    # On essaie d'accéder au chat d'ID 99999 (qui n'existe pas ou n'appartient pas à l'user)
-    response = client.get("/chats/99999", headers=headers)
-    assert response.status_code == 403
+    response = client.post("/login", json={"email": "voleur@test.com", "password": "voleur"})
+    return response.json().get("access_token")
+
+def test_unauthorized_access():
+    token_user1 = get_test_token()
+    headers_user1 = {"Authorization": f"Bearer {token_user1}"}
+    
+    token_user2 = get_second_test_token()
+    headers_user2 = {"Authorization": f"Bearer {token_user2}"}
+    
+    response_create = client.post("/chats", headers=headers_user1)
+    chat_id = response_create.json()["id"]
+    
+    response_hack = client.get(f"/chats/{chat_id}", headers=headers_user2)
+    assert response_hack.status_code == 403

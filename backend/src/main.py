@@ -69,7 +69,8 @@ async def create_chat(user: User = Depends(get_current_user)):
     news_context, initial_urls = await get_today_news_context()
     full_system_prompt = (
         "Tu es l'assistant de NewsFoundry, une application destinée à la gestion d'articles.\n"
-        "Réponds systématiquement en utilisant le format Markdown.\n\n"
+        "Réponds systématiquement en utilisant le format Markdown.\n"
+        "Si l'utilisateur pose une question sur un sujet qui n'est pas mentionné dans le contexte d'actualités ci-dessous, réponds poliment que tu n'as pas d'informations récentes à ce sujet aujourd'hui, afin de ne pas le laisser sans réponse.\n\n"
         f"{news_context}"
     )
     with Session(engine) as session:
