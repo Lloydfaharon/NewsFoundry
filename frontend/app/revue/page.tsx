@@ -87,7 +87,7 @@ export default function PressReleasesPage() {
   };
 
   const copyToClipboard = (release: PressRelease) => {
-    const text = `# ${release.title}\n\n${release.general_summary}\n\n` + 
+    const text = `# ${release.title}\n\n${release.general_summary}\n\n` +
       release.articles.map(a => `## ${a.title}\n${a.summary}`).join("\n\n");
     navigator.clipboard.writeText(text);
     alert("Copié dans le presse-papier !");
@@ -97,7 +97,7 @@ export default function PressReleasesPage() {
 
   return (
     <div className="flex h-screen bg-[#F0F2F5] text-gray-900 font-sans overflow-hidden">
-      
+
       {/* ERROR ALERT */}
       {error && (
         <div className="fixed top-6 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-xl shadow-2xl z-[200] flex items-center gap-3 animate-[bounce_1s_ease-in-out_infinite]">
@@ -108,16 +108,17 @@ export default function PressReleasesPage() {
         </div>
       )}
 
-       {/* SIDEBAR */}
-       <div className={`fixed inset-y-0 left-0 transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out w-64 bg-[#F9F9FB] border-r border-gray-100 flex flex-col z-50 shrink-0`}>
-        <div className="h-20 flex items-center px-6 border-b border-gray-50 cursor-pointer" onClick={() => router.push("/")}>
-          <Image src="/images/NEWSFOUNDRY.svg" alt="NewsFoundry" width={130} height={24} style={{ filter: 'invert(33%) sepia(87%) saturate(1476%) hue-rotate(242deg) brightness(85%) contrast(100%)' }} />
+      {/* SIDEBAR */}
+      <div className={`fixed inset-y-0 left-0 transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out w-64 bg-[#F9F9FB] border-r border-gray-100 flex flex-col z-50 shrink-0`}>
+        <div className="h-20 flex justify-start items-center px-5 border-b border-gray-50 cursor-pointer" onClick={() => router.push("/chat")}>
+          <Image src="/images/NEWSFOUNDRY.svg" alt="NewsFoundry" width={130} height={24} />
+          <Image src="/images/Union-3.svg" alt="Bot" width={80} height={80} className="w-3.5 h-3.5" />
         </div>
 
         <div className="flex-1 overflow-y-auto">
           {chats.map((chat) => (
-            <div 
-              key={chat.id} 
+            <div
+              key={chat.id}
               onClick={() => router.push(`/chat`)}
               className="w-full text-left px-6 py-4 border-b border-gray-50 cursor-pointer hover:bg-gray-50"
             >
@@ -146,11 +147,11 @@ export default function PressReleasesPage() {
           <button onClick={() => setIsSidebarOpen(true)} className="md:hidden mr-4">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
           </button>
-          
-          <div className="flex bg-[#F3F4F6] p-1 rounded-xl">
-            <button 
-              onClick={() => router.push("/chat")} 
-              className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-bold text-gray-500 hover:text-gray-700 transition-all"
+
+          <div className="flex gap-2 p-1 rounded-xl">
+            <button
+              onClick={() => router.push("/chat")}
+              className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-bold text-gray-500 bg-[#F3F4F6] hover:text-gray-700 transition-all"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -191,12 +192,12 @@ export default function PressReleasesPage() {
                       <h3 className="text-[15px] font-bold text-gray-800 uppercase tracking-wide">{release.title}</h3>
                       <div className="flex items-center gap-2 text-[12px] text-gray-400 font-medium">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                        {release.created_at 
-                          ? new Date(release.created_at).toLocaleDateString("fr-FR", { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) 
+                        {release.created_at
+                          ? new Date(release.created_at).toLocaleDateString("fr-FR", { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
                           : "mardi 30 septembre 2025 à 09:00"}
                       </div>
                     </div>
-                    <button 
+                    <button
                       onClick={() => copyToClipboard(release)}
                       className="bg-[#2D2D35] text-white px-6 py-2 rounded-lg text-xs font-bold hover:bg-black transition-all"
                     >
@@ -207,7 +208,7 @@ export default function PressReleasesPage() {
                   {/* Card Body */}
                   <div className="p-8 md:p-10 space-y-6">
                     <div className="text-gray-700 text-base leading-relaxed">
-                       <ReactMarkdown>{release.general_summary}</ReactMarkdown>
+                      <ReactMarkdown>{release.general_summary}</ReactMarkdown>
                     </div>
                     <div className="space-y-6 border-t border-gray-50 pt-6">
                       {release.articles.map((art, aIdx) => (

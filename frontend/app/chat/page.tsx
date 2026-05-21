@@ -57,7 +57,7 @@ export default function ChatPage() {
   useEffect(() => {
     const savedToken = localStorage.getItem("token");
     if (!savedToken) {
-      router.push("/login");
+      router.replace("/login");
     } else {
       setToken(savedToken);
       fetchChats(savedToken);
@@ -173,8 +173,8 @@ export default function ChatPage() {
         } else {
           showError("Erreur lors de la création d'une nouvelle discussion.");
         }
-      } catch (err) { 
-        console.error(err); 
+      } catch (err) {
+        console.error(err);
         showError("Impossible de se connecter au serveur.");
       }
     }
@@ -273,15 +273,14 @@ export default function ChatPage() {
 
       {/* SIDEBAR */}
       <div className={`fixed inset-y-0 left-0 transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out w-64 bg-[#F9F9FB] border-r border-gray-100 flex flex-col z-50 shrink-0`}>
-        <div className="h-20 flex items-center px-6 border-b border-gray-50">
+        <div className="h-20 flex items-center px-5 border-b border-gray-50 cursor-pointer" onClick={() => router.push("/chat")}>
           <Image
             src="/images/NEWSFOUNDRY.svg"
             alt="NewsFoundry"
             width={130}
             height={24}
-            style={{ filter: 'invert(33%) sepia(87%) saturate(1476%) hue-rotate(242deg) brightness(85%) contrast(100%)' }}
           />
-          <Image src="/images/Union-3.svg" alt="Bot" width={80} height={80} className="w-4 h-4" />
+          <Image src="/images/Union-3.svg" alt="Bot" width={80} height={80} className="w-3.5 h-3.5" />
         </div>
 
         <div className="flex-1 overflow-y-auto">
@@ -314,7 +313,7 @@ export default function ChatPage() {
         <div className="h-20 bg-white border-b border-gray-100 flex items-center px-6">
           {!activeChatId ? (
             /* ÉTAT ONGLET (Image 1 & 2) */
-            <div className="flex bg-[#F3F4F6] p-1 rounded-xl">
+            <div className="flex gap-2 p-1 rounded-xl">
               <button
                 onClick={() => setMode("chat")}
                 className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-bold transition-all ${mode === "chat" ? "bg-[#7B3FE4] text-white shadow-md" : "text-gray-500 hover:text-gray-700"}`}
@@ -326,7 +325,7 @@ export default function ChatPage() {
               </button>
               <button
                 onClick={() => router.push("/revue")}
-                className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-bold text-gray-500 hover:text-gray-700"
+                className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-bold text-gray-500 bg-[#F3F4F6] hover:text-gray-700"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
