@@ -213,8 +213,10 @@ export default function PressReleasesPage() {
                     <div className="space-y-6 border-t border-gray-50 pt-6">
                       {release.articles.map((art, aIdx) => (
                         <div key={aIdx} className="space-y-1">
-                          <h4 className="font-bold text-gray-800 text-[14px]">**{art.title}**</h4>
-                          <p className="text-gray-600 text-[14px] leading-relaxed">{art.summary}</p>
+                          <h4 className="font-bold text-gray-800 text-[14px]">{art.title}</h4>
+                          <div className="prose prose-sm max-w-none text-gray-600 text-[14px] leading-relaxed prose-p:my-1 prose-ul:my-1 prose-li:my-0.5">
+                            <ReactMarkdown>{art.summary}</ReactMarkdown>
+                          </div>
                         </div>
                       ))}
                     </div>

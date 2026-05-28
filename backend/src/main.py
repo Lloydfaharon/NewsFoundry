@@ -2,22 +2,22 @@ from dotenv import load_dotenv
 load_dotenv()
 from datetime import datetime
 from contextlib import asynccontextmanager
-from database import init_db # Import absolu
+from database import init_db
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlmodel import Session, select
 import uvicorn
 import bcrypt
-from auth import create_access_token, get_current_user # Import absolu
-from models import User, Chat # Import absolu
-from database import engine # Import absolu
-from agent import newsfoundry_agent, AgentDeps # Import absolu
-from press_service import generate_rag_press_release # Import absolu
-from news_service import get_today_news_context # Import absolu
+from auth import create_access_token, get_current_user 
+from models import User, Chat 
+from database import engine 
+from agent import newsfoundry_agent, AgentDeps 
+from press_service import generate_rag_press_release 
+from news_service import get_today_news_context 
 from pydantic_ai.messages import ModelMessage, ModelRequest, ModelResponse, UserPromptPart, TextPart, SystemPromptPart
 from pydantic import TypeAdapter
-from press_agent import press_agent # Import absolu
+from press_agent import press_agent 
 import json
 
 # --- SCHÉMA DE DONNÉES ---
@@ -70,7 +70,7 @@ async def create_chat(user: User = Depends(get_current_user)):
     full_system_prompt = (
         "Tu es l'assistant de NewsFoundry, une application destinée à la gestion d'articles.\n"
         "Réponds systématiquement en utilisant le format Markdown.\n"
-        "Si l'utilisateur pose une question sur un sujet qui n'est pas mentionné dans le contexte d'actualités ci-dessous, réponds poliment que tu n'as pas d'informations récentes à ce sujet aujourd'hui, afin de ne pas le laisser sans réponse.\n\n"
+        "Si l'utilisateur pose une question sur un sujet qui n'est pas mentionné dans le contexte d'actualités ci-dessous, utilise d'abord ton outil de recherche (search_news_tool) pour trouver l'information. Si l'outil ne trouve rien, alors seulement réponds poliment que tu n'as pas d'informations récentes à ce sujet aujourd'hui.\n\n"
         f"{news_context}"
     )
     with Session(engine) as session:
@@ -78,7 +78,10 @@ async def create_chat(user: User = Depends(get_current_user)):
         session.add(new_chat)
         session.commit()
         session.refresh(new_chat)
-        return {"id": new_chat.id}
+        return {
+            "id": new_chat.id, 
+            "created_at": new_chat.created_at.isoformat() if new_chat.created_at else datetime.utcnow().isoformat()
+        }
 
 @app.get("/chats")
 async def list_chats(user: User = Depends(get_current_user)):
