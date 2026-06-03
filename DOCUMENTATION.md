@@ -108,7 +108,7 @@ L'application est séparée en deux environnements distincts.
   ```bash
   cd backend
   uv sync
-  uv run uvicorn src.main:app --reload
+  uv run uvicorn src.main:app --reload --app-dir src
   ```
   L'API sera accessible sur `http://localhost:8000`.
 
