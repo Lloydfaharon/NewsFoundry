@@ -75,7 +75,7 @@ export default function ChatPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setChats(data.reverse()); // Plus récents en haut
+        setChats(data.sort((a: any, b: any) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())); // Plus récents en haut
       } else if (res.status === 401) {
         localStorage.removeItem("token");
         router.push("/login");
@@ -232,29 +232,30 @@ export default function ChatPage() {
       {/* MODALE GÉNÉRATION REVUE DE PRESSE */}
       {isPressModalOpen && (
         <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-            <div className="p-6 md:p-8 flex flex-col gap-6">
-              <div className="flex justify-between items-start">
-                <div className="space-y-1">
-                  <h3 className="text-xl font-bold text-gray-900">Générer une revue de presse</h3>
-                  <p className="text-sm text-gray-500">Donner un titre à votre revue de presse</p>
-                </div>
+          <div className="bg-white rounded-[1.5rem] shadow-2xl w-full max-w-lg overflow-hidden px-6 pb-6">
+            <div className="p-8 md:p-10 flex flex-col gap-8">
+              <div className="flex justify-end">
                 <button
                   onClick={() => setIsPressModalOpen(false)}
-                  className="text-gray-400 hover:text-gray-600 text-xs font-medium"
+                  className="text-gray-400 hover:text-gray-600 text-sm font-medium transition-colors"
                 >
                   Fermer
                 </button>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Thème de la revue de presse</label>
+              <div className="text-center space-y-1 -mt-4">
+                <h3 className="text-lg font-bold text-gray-900 leading-tight pt-10">Générer une revue de presse</h3>
+                <p className="text-lg text-gray-400 font-normal">Donner un titre à votre revue de presse</p>
+              </div>
+
+              <div className="space-y-3">
+                <label className="text-base font-normal text-gray-800 block text-left">Thème de la revue de presse</label>
                 <input
                   type="text"
                   value={pressTopic}
                   onChange={(e) => setPressTopic(e.target.value)}
                   placeholder="Tapez le thème..."
-                  className="w-full bg-[#f4f4f5] border border-transparent rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-purple-400 transition-all"
+                  className="w-full bg-[#EAEAEE] border border-transparent rounded-xl px-5 py-4 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-purple-500 transition-all"
                   autoFocus
                 />
               </div>
@@ -262,7 +263,7 @@ export default function ChatPage() {
               <button
                 onClick={generatePressRelease}
                 disabled={!pressTopic.trim() || isGeneratingPress}
-                className="w-full bg-[#2D2D35] text-white py-3 rounded-lg font-bold text-sm hover:bg-black transition-all disabled:opacity-50"
+                className="w-full bg-[#232329] text-white py-4 rounded-sm font-normal text-sm hover:bg-black transition-all disabled:opacity-50"
               >
                 {isGeneratingPress ? "Génération en cours..." : "Générer"}
               </button>

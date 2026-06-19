@@ -51,7 +51,7 @@ export default function PressReleasesPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setChats(data.reverse());
+        setChats(data.sort((a: any, b: any) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()));
       } else if (res.status === 401) {
         localStorage.removeItem("token");
         router.push("/login");
@@ -71,7 +71,7 @@ export default function PressReleasesPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setReleases(data.reverse());
+        setReleases(data.sort((a: any, b: any) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()));
       } else if (res.status === 401) {
         localStorage.removeItem("token");
         router.push("/login");

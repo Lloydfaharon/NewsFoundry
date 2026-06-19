@@ -86,7 +86,7 @@ async def create_chat(user: User = Depends(get_current_user)):
 @app.get("/chats")
 async def list_chats(user: User = Depends(get_current_user)):
     with Session(engine) as session:
-        statement = select(Chat).where(Chat.user_id == user.id)
+        statement = select(Chat).where(Chat.user_id == user.id).order_by(Chat.created_at.desc())
         chats = session.exec(statement).all()
         return [{"id": c.id, "created_at": c.created_at.isoformat() if c.created_at else datetime.utcnow().isoformat()} for c in chats]
 
@@ -206,6 +206,7 @@ async def list_all_press_releases(user: User = Depends(get_current_user)):
                     release_copy = dict(release)
                     release_copy["chat_id"] = chat.id
                     all_releases.append(release_copy)
+        all_releases.sort(key=lambda x: x.get("created_at", ""), reverse=True)
         return all_releases
 
 if __name__ == "__main__":
